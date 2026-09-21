@@ -56,15 +56,15 @@ char* scanif(FILE *docu)
 //Liberar unicamente el apuntador a la primera palabra 
 char** split(char str[], char lim[], int *nPalabras)
 {
-  char* str2 = strdup(str);
-  char** array = malloc(sizeof(char*) * 2);
+  char* str2 = mstrdup(str);
+  char** array = NULL;
   *nPalabras = 0;
 
   char *token = strtok(str2, lim);
   while (token != NULL) {
+    array = realloc(array, sizeof(char*) * (*nPalabras + 1));
     array[*nPalabras] = mstrdup(token);
     (*nPalabras)++;
-    array = realloc(array, sizeof(char*) * (*nPalabras + 1));
     token = strtok(NULL, lim);
   }
   free(str2);

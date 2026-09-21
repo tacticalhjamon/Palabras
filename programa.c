@@ -1,3 +1,8 @@
+/*
+**  Hola, el main empieza en la linea 
+**
+*/
+
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_image.h>
@@ -21,7 +26,7 @@ int includesc(char* str, char** array, int length){
   for(int i = 0; i < length; i++){
     lowStr = lower(str);
     lowArr = lower(array[i]);
-    if(strcmp(lower(str), lower(array[i])) == 0){
+    if(strcmp(str, array[i]) == 0){
       indice = i;
       free(lowStr);
       free(lowArr);
@@ -69,6 +74,7 @@ void instrucciones(ALLEGRO_BITMAP *cuadroTexto, ALLEGRO_BITMAP *fondo)
   
   contenido = malloc(letras + 1);
   fread(contenido, 1, letras, reglas);
+  contenido[letras] = '\0';
   lineas = split(contenido, "\n", &lineasi);
   al_draw_bitmap(fondo, 0, 0, 0);
   al_draw_scaled_bitmap(cuadroTexto, 0, 0, 200, 200, 200, 190, 860, 290, 0);
@@ -91,6 +97,7 @@ void instrucciones(ALLEGRO_BITMAP *cuadroTexto, ALLEGRO_BITMAP *fondo)
   free(lineas);
   free(contenido);
   al_destroy_event_queue(colaInstrucciones);
+  al_destroy_font(fuenteChica);
 }
 
 void pantalla1(ALLEGRO_BITMAP *fondo, ALLEGRO_FONT *font)
@@ -210,8 +217,11 @@ char **obtienePalabras(int opc, int *palabrasn){
     *palabrasn = 10;
 
   char temp, *stemp = NULL;
-  int nLineas = 0, *indice;
-  char **palabras = malloc(sizeof(char*) * (*palabrasn));
+  int nLineas = 0, *indice = NULL;
+  char **palabras = NULL;
+  palabras = malloc(sizeof(char*) * (*palabrasn));
+  if(palabras == NULL)
+    return NULL;
   FILE *archPalabras = NULL;
   archPalabras = fopen("src/.palabras.txt", "r");
   if(archPalabras == NULL){
@@ -253,33 +263,40 @@ char **obtienePalabras(int opc, int *palabrasn){
 
 int main()
 {
+  //Se asegura que allegro carge correctamente, si no devuelve al OS 1(Error)
   if(!al_init()){
-    return -1;
+    printf("Fallo al iniciar allegro\n");
+    return 1;
   }
   if(!al_init_primitives_addon()){
-    return -1;
+    printf("Fallo al iniciar primitives\n");
+    return 1;
   }
   if(!al_init_image_addon()){
-    return -1;
+    printf("Fallo al iniciar imagenes\n");
+    return 1;
   }
   if(!al_install_keyboard()){
-    return -1;
+    printf("Fallo al instalar el teclado\n");
+    return 1;
   }
   if(!al_init_font_addon()){
-    return -1;
+    printf("Fallo al iniciar font_addon\n");
+    return 1;
   }
   if(!al_init_ttf_addon()){
-    return -1;
+    printf("Fallo al iniciar ttf_addon\n");
+    return 1;
   }
 
-  ALLEGRO_DISPLAY *disp;
-  ALLEGRO_EVENT_QUEUE *eventos;
+  ALLEGRO_DISPLAY *disp = NULL;
+  ALLEGRO_EVENT_QUEUE *eventos = NULL;
   ALLEGRO_EVENT evento;
-  ALLEGRO_FONT *fuenteTexto, *fuentePalabras, *fuenteRespuesta;
-  ALLEGRO_BITMAP *assets, *background, *textHolder;
-  ALLEGRO_TIMER *tempo;
+  ALLEGRO_FONT *fuenteTexto = NULL, *fuentePalabras = NULL, *fuenteRespuesta = NULL; // fuenteTexto se usa solo en la pantalla inicial, fuentePalabras se ocupa al dar las palabras
+  ALLEGRO_BITMAP *assets = NULL, *background = NULL, *textHolder = NULL; //assets es para cosas variadas(flecha y rata), background es el fondo de cada etapa y textHolder es un fondo para texto
+  ALLEGRO_TIMER *tempo = NULL;
 
-  int pantalla = 1;//mx, my
+  int pantalla = 1; //Pantalla define en que etapa esta el juego(1-inicio, 2-Seleccion de dificultad, 3-Muestra palabras, 4-Introduce palabras 5-fin, si es 7 por alguna razon empieza de nuevo)
   int x = 800, y = 308, dificultad, cantidadPalabras, palabra, cantidadLetras, letra, palabrasEncontradas, try;
   char **palabras = NULL;
   char respuesta[21], **respuestas = NULL;
@@ -289,6 +306,7 @@ int main()
   disp = al_create_display(XMAX, YMAX);
   al_set_window_title(disp, "Palabras");
 
+  //Carga los recursos
   background = al_load_bitmap("statics/img/PORTADA.png");
   textHolder = al_load_bitmap("statics/img/textholder.png");
 
@@ -318,10 +336,12 @@ int main()
       al_rest(1.0 / 30);
     }
 
-    al_destroy_bitmap(background);
-    background = al_load_bitmap("statics/img/bg.png");
-    assets = al_load_bitmap("statics/img/flecha.png");
-    
+    if(pantalla == 2)
+    {
+      al_destroy_bitmap(background);
+      background = al_load_bitmap("statics/img/bg.png");
+      assets = al_load_bitmap("statics/img/flecha.png");
+    }
     while (pantalla == 2)
     {
       pantalla2(fuenteRespuesta, background, assets, x, y);
@@ -340,10 +360,13 @@ int main()
       al_rest(1.0/30);
     }
     
-    palabra = 0;
-    tempo = al_create_timer(1.0/dificultad); //Si esta muy facil puede ser al_create_timer(1/ pow(2, dificultad - 1));
-    al_register_event_source(eventos, al_get_timer_event_source(tempo));
-    al_start_timer(tempo);
+    if(pantalla == 3)
+    {
+      palabra = 0;
+      tempo = al_create_timer(1.0/dificultad); //Si esta muy facil puede ser al_create_timer(1/ pow(2, dificultad - 1));
+      al_register_event_source(eventos, al_get_timer_event_source(tempo));
+      al_start_timer(tempo);
+    }
     while (pantalla == 3)
     {
       al_clear_to_color(al_map_rgb(0, 0, 0));
@@ -352,22 +375,29 @@ int main()
 
       al_wait_for_event(eventos, &evento);
       if(evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
+      {
         pantalla = 0;
+        al_stop_timer(tempo);
+        al_destroy_timer(tempo);
+      }
       if(evento.type == ALLEGRO_EVENT_TIMER){
         palabra++;
         if(palabra == cantidadPalabras)
           pantalla = 4;
       }
     }
-    al_stop_timer(tempo);
-    al_destroy_timer(tempo);
+    if(pantalla == 4)
+    {
+      al_stop_timer(tempo);
+      al_destroy_timer(tempo);
 
-    al_destroy_bitmap(background);
-    background = al_load_bitmap("statics/img/tragamonedas.png");
-    try = 0;
-    palabrasEncontradas = 0;
-    cantidadLetras = 0;
-    respuesta[0] = '\0';
+      al_destroy_bitmap(background);
+      background = al_load_bitmap("statics/img/tragamonedas.png");
+      try = 0;
+      palabrasEncontradas = 0;
+      cantidadLetras = 0;
+      respuesta[0] = '\0';
+    }
     while(pantalla == 4){
       pantalla4(fuenteRespuesta, background, respuesta, respuestas, palabrasEncontradas, cantidadPalabras, try);
 
