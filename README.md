@@ -10,8 +10,11 @@ En el directorio raiz del repositorio se encuentran 4 archivos. El archivo Palab
 El archivo programa.c es el que contiene todo el juego, de este no digo nada por que tratare de documentarlo un poco en estos dias por si se quiere hacer algun cambio.  
 El archivo .gitignore me parece que saben que hace.
   
-Para compilar el juego sin usar los archivos sh o bat ejecuta:
-``` bash
+Para compilar el juego sin usar los archivos sh o bat ejecuta lo siguiente desde la raiz del repositorio:
+``` bashcd
+    ../.biblioteca
+  	gcc -c funjs.c -o funjs.o 
+	  cd ..
     gcc programa.c .biblioteca/funjs.o -o programa.exe -lallegro -lallegro_primitives -lallegro_image -lallegro_font -lallegro_ttf
 ```
 Angie, si lees esto perdona mi pesima redaccion.
