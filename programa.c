@@ -26,7 +26,7 @@ int includesc(char* str, char** array, int length){
   for(int i = 0; i < length; i++){
     lowStr = lower(str);
     lowArr = lower(array[i]);
-    if(strcmp(str, array[i]) == 0){
+    if(strcmp(lowStr, lowArr) == 0){
       indice = i;
       free(lowStr);
       free(lowArr);
@@ -119,7 +119,7 @@ void pantalla2(ALLEGRO_FONT *font, ALLEGRO_BITMAP *fondo, ALLEGRO_BITMAP *extra,
   al_draw_filled_rounded_rectangle(557.2, 308, 722.8, 411, 10, 10, negro);
   al_draw_text(font, blanco, 640, 334.5, ALLEGRO_ALIGN_CENTER, "Medio");
   al_draw_filled_rounded_rectangle(557.2, 514, 722.8, 617, 10, 10, negro);
-  al_draw_text(font, blanco, 640, 540.5, ALLEGRO_ALIGN_CENTER, "Dífcil");
+  al_draw_text(font, blanco, 640, 540.5, ALLEGRO_ALIGN_CENTER, "Díficil");
   al_draw_scaled_bitmap(extra, 0, 0, al_get_bitmap_width(extra), al_get_bitmap_height(extra), x - 50, y - 50, 225, 200, 0);
   al_flip_display();
 }
